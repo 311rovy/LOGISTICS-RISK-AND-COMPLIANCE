@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logistics Risk Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --background-color: #f8f9fa;
+            --text-color: #2c3e50;
+        }
+
+        body {
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+        }
+
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            background: white;
+            margin-bottom: 2rem;
+            padding: 2rem;
+        }
+
+        .card-header {
+            background: var(--primary-color);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+            margin: -2rem -2rem 2rem -2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 2px solid #e9ecef;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 2rem 0;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            color: var(--secondary-color);
+        }
+
+        .prediction-result {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .result-header {
+            color: var(--primary-color);
+            border-bottom: 2px solid #e9ecef;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .result-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            color: var(--secondary-color);
+        }
+
+        .risk-level {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .risk-low {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .risk-medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .risk-high {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .section-title {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-floating {
+            margin-bottom: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 1rem;
+            }
+            
+            .card {
+                padding: 1rem;
+            }
+        }
+
+        .risk-details {
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .risk-factors {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .result-item small {
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Logistics Risk Prediction</h2>
+                <p class="mb-0 mt-2 text-light">Enter shipment details to assess potential risks</p>
+            </div>
+
+            <form id="predictionForm" class="needs-validation" novalidate>
+                <div class="row g-4">
+                    <!-- Client Information Section -->
+                    <div class="col-12">
+                        <h4 class="section-title"><i class="fas fa-user me-2"></i>Client Information</h4>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="clientType" required>
+                                <option value="">Select...</option>
+                                <option value="Business">Business</option>
+                                <option value="Individual">Individual</option>
+                            </select>
+                            <label for="clientType">Client Type</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="clientLocation" required>
+                                <option value="">Select...</option>
+                                <option value="Nairobi">Nairobi</option>
+                                <option value="Kampala">Kampala</option>
+                                <option value="Kigali">Kigali</option>
+                                <option value="Arusha">Arusha</option>
+                            </select>
+                            <label for="clientLocation">Client Location</label>
+                        </div>
+                    </div>
+
+                    <!-- Cargo Information Section -->
+                    <div class="col-12">
+                        <h4 class="section-title"><i class="fas fa-box me-2"></i>Cargo Information</h4>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="cargoType" required>
+                                <option value="">Select...</option>
+                                <option value="Electronics">Electronics</option>
+                                <option value="Machinery">Machinery</option>
+                                <option value="Clothing">Clothing</option>
+                                <option value="Alcohol">Alcohol</option>
+                            </select>
+                            <label for="cargoType">Cargo Type</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="cargoValue" required>
+                            <label for="cargoValue">Cargo Value (USD)</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="cargoWeight" required>
+                            <label for="cargoWeight">Cargo Weight (kg)</label>
+                        </div>
+                    </div>
+
+                    <!-- Transport Information Section -->
+                    <div class="col-12">
+                        <h4 class="section-title"><i class="fas fa-truck me-2"></i>Transport Information</h4>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="transporter" required>
+                                <option value="">Select...</option>
+                                <option value="Transporter A">Transporter A</option>
+                                <option value="Transporter B">Transporter B</option>
+                                <option value="Transporter C">Transporter C</option>
+                            </select>
+                            <label for="transporter">Transporter</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <select class="form-select" id="route" required>
+                                <option value="">Select...</option>
+                                <option value="Nairobi-Eldoret">Nairobi-Eldoret</option>
+                                <option value="Arusha-Nairobi">Arusha-Nairobi</option>
+                                <option value="Nairobi-Kisumu">Nairobi-Kisumu</option>
+                                <option value="Arusha-Kampala">Arusha-Kampala</option>
+                            </select>
+                            <label for="route">Route</label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="kraPenalty" required>
+                            <label for="kraPenalty">KRA Penalty</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 text-center mt-4">
+                        <button class="btn btn-primary btn-lg" type="submit">
+                            <i class="fas fa-calculator me-2"></i>Calculate Risk
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="loading">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-3">Analyzing risk factors...</p>
+        </div>
+
+        <div class="prediction-result">
+            <h3 class="result-header"><i class="fas fa-chart-bar me-2"></i>Prediction Results</h3>
+            
+            <div class="result-item">
+                <i class="fas fa-exclamation-triangle result-icon"></i>
+                <div>
+                    <h5 class="mb-1">Incident Type</h5>
+                    <p class="mb-0" id="incidentType"></p>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <i class="fas fa-dollar-sign result-icon"></i>
+                <div>
+                    <h5 class="mb-1">Estimated Loss</h5>
+                    <p class="mb-0">$<span id="estimatedLoss"></span></p>
+                </div>
+            </div>
+
+            <div class="risk-level" id="riskLevel"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('predictionForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loading = document.querySelector('.loading');
+            const result = document.querySelector('.prediction-result');
+            
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            const formData = {
+                Client_Type: document.getElementById('clientType').value,
+                Client_Location: document.getElementById('clientLocation').value,
+                Cargo_Type: document.getElementById('cargoType').value,
+                Cargo_Value: parseFloat(document.getElementById('cargoValue').value),
+                Cargo_Weight: parseFloat(document.getElementById('cargoWeight').value),
+                Transporter: document.getElementById('transporter').value,
+                Route: document.getElementById('route').value,
+                KRA_Penalty: parseFloat(document.getElementById('kraPenalty').value)
+            };
+
+            try {
+                const response = await fetch('/api/v1/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer 2ovpxyeiy4YbBTP44SNhLNQxuce_2Dn1doK14eFT3pb6YZEvP'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Calculate risk factors based on multiple parameters
+                    const cargoValueRisk = formData.Cargo_Value > 100000 ? 'High' : formData.Cargo_Value > 50000 ? 'Medium' : 'Low';
+                    const routeRisk = getRouteRisk(formData.Route);
+                    const cargoTypeRisk = getCargoTypeRisk(formData.Cargo_Type);
+                    
+                    // Update incident type with more context
+                    const incidentType = data.incident_type_mapping[data.incident_type];
+                    document.getElementById('incidentType').innerHTML = `
+                        <strong>${incidentType}</strong><br>
+                        <small class="text-muted">Based on historical patterns and current factors</small>
+                    `;
+
+                    // Format estimated loss with currency and percentage
+                    const estimatedLoss = data.estimated_loss;
+                    const lossPercentage = ((estimatedLoss / formData.Cargo_Value) * 100).toFixed(1);
+                    document.getElementById('estimatedLoss').innerHTML = `
+                        ${estimatedLoss.toLocaleString('en-US', {
+                            style: 'currency',
+                            currency: 'USD',
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })}<br>
+                        <small class="text-muted">${lossPercentage}% of cargo value</small>
+                    `;
+
+                    // Add detailed risk assessment
+                    const riskLevel = document.getElementById('riskLevel');
+                    const riskAssessment = calculateOverallRisk(estimatedLoss, cargoValueRisk, routeRisk, cargoTypeRisk);
+                    
+                    riskLevel.className = `risk-level risk-${riskAssessment.level.toLowerCase()}`;
+                    riskLevel.innerHTML = `
+                        <h4><i class="${getRiskIcon(riskAssessment.level)} me-2"></i>${riskAssessment.level} Risk</h4>
+                        <div class="risk-details mt-3">
+                            <p class="mb-2">${riskAssessment.message}</p>
+                            <div class="risk-factors">
+                                <small>
+                                    <strong>Key Risk Factors:</strong><br>
+                                    • Cargo Value Risk: ${cargoValueRisk}<br>
+                                    • Route Risk: ${routeRisk}<br>
+                                    • Cargo Type Risk: ${cargoTypeRisk}
+                                </small>
+                            </div>
+                        </div>
+                    `;
+                    
+                    result.style.display = 'block';
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error making prediction: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+            }
+        });
+
+        // Helper functions for risk assessment
+        function getRouteRisk(route) {
+            const riskMap = {
+                'Arusha-Kampala': 'High',
+                'Nairobi-Eldoret': 'Medium',
+                'Arusha-Nairobi': 'Medium',
+                'Nairobi-Kisumu': 'Low'
+            };
+            return riskMap[route] || 'Medium';
+        }
+
+        function getCargoTypeRisk(cargoType) {
+            const riskMap = {
+                'Electronics': 'High',
+                'Alcohol': 'High',
+                'Machinery': 'Medium',
+                'Clothing': 'Low'
+            };
+            return riskMap[cargoType] || 'Medium';
+        }
+
+        function getRiskIcon(level) {
+            const iconMap = {
+                'High': 'fas fa-exclamation-circle',
+                'Medium': 'fas fa-exclamation-triangle',
+                'Low': 'fas fa-check-circle'
+            };
+            return iconMap[level] || 'fas fa-info-circle';
+        }
+
+        function calculateOverallRisk(estimatedLoss, cargoValueRisk, routeRisk, cargoTypeRisk) {
+            let riskScore = 0;
+            
+            // Convert risk levels to scores
+            const riskValues = { 'High': 3, 'Medium': 2, 'Low': 1 };
+            riskScore += riskValues[cargoValueRisk] || 2;
+            riskScore += riskValues[routeRisk] || 2;
+            riskScore += riskValues[cargoTypeRisk] || 2;
+            
+            // Add estimated loss factor
+            if (estimatedLoss > 100000) riskScore += 3;
+            else if (estimatedLoss > 50000) riskScore += 2;
+            else riskScore += 1;
+
+            // Calculate final risk level and message
+            if (riskScore >= 10) {
+                return {
+                    level: 'High',
+                    message: 'Significant risk detected. Enhanced security measures and insurance coverage strongly recommended.'
+                };
+            } else if (riskScore >= 7) {
+                return {
+                    level: 'Medium',
+                    message: 'Moderate risk level. Standard security measures and regular monitoring advised.'
+                };
+            } else {
+                return {
+                    level: 'Low',
+                    message: 'Low risk level. Standard procedures should be sufficient.'
+                };
+            }
+        }
+    </script>
+</body>
+</html> 

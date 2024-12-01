@@ -1,0 +1,13 @@
+setuptools==68.2.2
+wheel==0.41.2
+flask==3.1.0
+numpy>=1.26.0
+scikit-learn==1.5.2
+pandas==2.2.0
+xgboost==2.0.3
+joblib==1.3.2
+imbalanced-learn==0.12.0
+requests==2.31.0
+flask-ngrok==0.0.25
+pyngrok==7.0.5
+seaborn==0.13.2 
